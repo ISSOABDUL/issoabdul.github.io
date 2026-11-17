@@ -1,0 +1,72 @@
+---
+/**
+ * Mise en page commune à toutes les pages : métadonnées, en-tête, pied de page.
+ * Les métadonnées Open Graph contrôlent l'aperçu quand le lien est partagé
+ * (LinkedIn, WhatsApp) : c'est souvent la première chose qu'un recruteur voit.
+ */
+import '../styles/global.css';
+import { identite, contact } from '../data/accueil';
+
+interface Props {
+  titre: string;
+  description: string;
+}
+
+const { titre, description } = Astro.props;
+const urlCanonique = new URL(Astro.url.pathname, Astro.site);
+const anneeCourante = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titre}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={urlCanonique} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={titre} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={urlCanonique} />
+    <meta property="og:locale" content="fr_FR" />
+  </head>
+  <body class="min-h-screen bg-papier text-encre antialiased">
+    <a
+      href="#contenu"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:bg-surface focus:px-3 focus:py-2"
+    >
+      Aller au contenu
+    </a>
+
+    <header class="border-b border-ligne">
+      <nav
+        class="mx-auto flex max-w-5xl flex-wrap items-baseline justify-between gap-x-6 gap-y-2 px-5 py-4"
+        aria-label="Navigation principale"
+      >
+        <a href="/" class="font-semibold text-encre no-underline">{identite.nom}</a>
+        <ul class="flex gap-5 text-[0.95rem]">
+          <li><a href="/#projets" class="text-encre-douce no-underline hover:text-accent">Études de cas</a></li>
+          <li><a href="/#parcours" class="text-encre-douce no-underline hover:text-accent">Parcours</a></li>
+          <li><a href="/#contact" class="text-encre-douce no-underline hover:text-accent">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="contenu" class="mx-auto max-w-5xl px-5">
+      <slot />
+    </main>
+
+    <footer class="mt-24 border-t border-ligne">
+      <div class="mx-auto flex max-w-5xl flex-wrap justify-between gap-4 px-5 py-8 text-sm text-encre-douce">
+        <p>{identite.nom}, {identite.ville}, {anneeCourante}</p>
+        <p>
+          Les projets clients sont décrits sans nom ni donnée interne, par respect des accords de
+          confidentialité.
+        </p>
+        <p><a href={`mailto:${contact.email}`}>{contact.email}</a></p>
+      </div>
+    </footer>
+  </body>
+</html>

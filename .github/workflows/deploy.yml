@@ -1,0 +1,42 @@
+# Déploiement automatique sur GitHub Pages.
+# Chaque push sur `main` reconstruit le site et le publie. Aucun secret n'est
+# nécessaire : GitHub fournit un jeton temporaire aux permissions minimales ci-dessous.
+name: Déploiement GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Permet aussi un déploiement manuel depuis l'onglet Actions.
+
+# Moindre privilège : lecture du code, écriture uniquement sur Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un seul déploiement à la fois : un push rapide annule le précédent encore en cours.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+      - name: Construire le site avec Astro
+        uses: withastro/action@v3
+        with:
+          node-version: 22
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publier sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

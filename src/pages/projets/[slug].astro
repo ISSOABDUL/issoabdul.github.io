@@ -1,0 +1,83 @@
+---
+/**
+ * Page d'une étude de cas, générée pour chaque fichier de src/content/projets.
+ * Structure identique pour les 3 projets : le recruteur sait où trouver
+ * le rôle, la stack et le résultat sans relire toute la page.
+ */
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const projets = (await getCollection('projets')).sort((a, b) => a.data.ordre - b.data.ordre);
+  // Chaque page connaît le projet suivant, pour enchaîner la lecture sans revenir à l'accueil.
+  return projets.map((projet, index) => ({
+    params: { slug: projet.id },
+    props: { projet, suivant: projets[(index + 1) % projets.length] },
+  }));
+}
+
+interface Props {
+  projet: CollectionEntry<'projets'>;
+  suivant: CollectionEntry<'projets'>;
+}
+
+const { projet, suivant } = Astro.props;
+const { Content } = await render(projet);
+const { titre, contexte, role, statut, stack, resume } = projet.data;
+---
+
+<BaseLayout titre={`${titre} · Étude de cas`} description={resume}>
+  <article class="pb-8 pt-10 sm:pt-14">
+    <p><a href="/#projets">Retour aux études de cas</a></p>
+
+    <h1 class="mt-6 max-w-[24ch] text-[clamp(1.85rem,4.4vw,2.9rem)] font-[680] leading-[1.1] tracking-[-0.02em]">
+      {titre}
+    </h1>
+    <p class="mt-4 max-w-[62ch] text-lg text-encre-douce">{resume}</p>
+
+    <!-- Fiche d'identité du projet : les 4 informations qu'un recruteur cherche en premier. -->
+    <dl class="mt-8 grid gap-x-8 gap-y-4 border-y border-ligne py-6 sm:grid-cols-2">
+      <div>
+        <dt class="text-sm text-encre-douce">Contexte</dt>
+        <dd class="font-medium">{contexte}</dd>
+      </div>
+      <div>
+        <dt class="text-sm text-encre-douce">Mon rôle</dt>
+        <dd class="font-medium">{role}</dd>
+      </div>
+      <div>
+        <dt class="text-sm text-encre-douce">Statut</dt>
+        <dd class="font-medium text-accent">{statut}</dd>
+      </div>
+      <div>
+        <dt class="text-sm text-encre-douce">Stack</dt>
+        <dd>
+          <ul class="mt-1 flex flex-wrap gap-2">
+            {stack.map((outil) => <li class="rounded bg-accent-doux px-2 py-0.5 text-sm">{outil}</li>)}
+          </ul>
+        </dd>
+      </div>
+    </dl>
+
+    <div class="contenu">
+      <Content />
+    </div>
+
+    <nav class="mt-16 border-t border-ligne pt-6" aria-label="Étude de cas suivante">
+      <p class="text-sm text-encre-douce">Étude de cas suivante</p>
+      <a href={`/projets/${suivant.id}/`} class="mt-1 inline-block text-xl font-semibold">
+        {suivant.data.titre}
+      </a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<script>
+  import { rendreSchemas } from '../../scripts/schemas';
+
+  rendreSchemas().catch((erreur: unknown) => {
+    // Aucune erreur silencieuse : le texte source du schéma reste affiché, et l'erreur est tracée.
+    console.error('Échec du chargement des schémas', erreur);
+  });
+</script>

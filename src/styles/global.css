@@ -1,0 +1,164 @@
+/*
+ * Styles globaux.
+ *
+ * Choix de conception :
+ * - Une seule famille de caractères, Public Sans : conçue pour les services
+ *   numériques publics, elle colle au sujet du portfolio (digitaliser des institutions).
+ * - Un seul accent, un vert « validé », utilisé avec parcimonie (liens, repères).
+ * - Les couleurs sont des variables CSS : le mode sombre ne fait que les redéfinir.
+ */
+@import "tailwindcss";
+@import "@fontsource-variable/public-sans";
+
+:root {
+  --papier: #f5f7f6;
+  --surface: #ffffff;
+  --encre: #142033;
+  --encre-douce: #4e5b6b;
+  --ligne: #cbd3cf;
+  --accent: #1d6b52;
+  --accent-doux: #dcebe4;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --papier: #0e1520;
+    --surface: #152030;
+    --encre: #e6ecea;
+    --encre-douce: #9aa7b3;
+    --ligne: #2a3644;
+    --accent: #5bc79c;
+    --accent-doux: #163328;
+    color-scheme: dark;
+  }
+}
+
+/* `inline` : les utilitaires Tailwind pointent vers les variables, donc suivent le thème. */
+@theme inline {
+  --color-papier: var(--papier);
+  --color-surface: var(--surface);
+  --color-encre: var(--encre);
+  --color-encre-douce: var(--encre-douce);
+  --color-ligne: var(--ligne);
+  --color-accent: var(--accent);
+  --color-accent-doux: var(--accent-doux);
+  --font-sans: "Public Sans Variable", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    background: var(--papier);
+    color: var(--encre);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    font-size: 1.0625rem; /* 17 px : confortable sur mobile comme sur écran */
+    line-height: 1.6;
+    font-feature-settings: "kern", "liga";
+  }
+  a {
+    color: var(--accent);
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+  a:hover {
+    text-decoration-thickness: 2px;
+  }
+  /* Focus clavier toujours visible : accessibilité non négociable. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
+/*
+ * Contenu Markdown des études de cas.
+ * Écrit à la main plutôt qu'avec un plugin : une dépendance de moins,
+ * et un contrôle total sur la lecture (longueur de ligne < 72 caractères).
+ */
+.contenu > :is(h2, p, ul) {
+  /* Le texte reste à ~68 caractères par ligne ; les schémas, eux, prennent toute la largeur. */
+  max-width: 68ch;
+}
+.contenu h2 {
+  font-size: 1.375rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin: 2.75rem 0 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ligne);
+}
+/* Le premier titre suit déjà le filet de la fiche projet : pas de double trait. */
+.contenu > h2:first-child {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 2.5rem;
+}
+.contenu p,
+.contenu ul {
+  margin: 0 0 1rem;
+}
+.contenu ul {
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+.contenu li {
+  margin-bottom: 0.35rem;
+}
+.contenu li::marker {
+  color: var(--accent);
+}
+.contenu strong {
+  font-weight: 650;
+}
+
+/* Conteneur des schémas Mermaid : défile horizontalement s'il est trop large (mobile). */
+.schema {
+  margin: 1.5rem 0 1.75rem;
+  padding: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--ligne);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.schema svg {
+  display: block;
+  margin: 0 auto;
+  height: auto;
+  /* Mermaid réduit le schéma à la largeur disponible : sur mobile, le texte devient illisible.
+     Largeur minimale + défilement horizontal du conteneur = schéma toujours lisible. */
+  min-width: 640px;
+}
+/* Petits écrans : schéma plus large (texte ~12 px) et indication de défilement. */
+.indice-defilement {
+  display: none;
+  margin: -1rem 0 1.75rem;
+  font-size: 0.875rem;
+  color: var(--encre-douce);
+}
+@media (max-width: 640px) {
+  .schema svg {
+    min-width: 900px;
+  }
+  .indice-defilement {
+    display: block;
+  }
+}
+/* Avant le rendu (ou si JavaScript est désactivé) : le texte source reste lisible. */
+.contenu pre:has(> code.language-mermaid) {
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  color: var(--encre-douce);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+  }
+}
+html {
+  scroll-behavior: smooth;
+}

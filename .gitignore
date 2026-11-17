@@ -1,0 +1,9 @@
+# Dépendances et artefacts de build : jamais versionnés
+node_modules/
+dist/
+.astro/
+# Variables locales (aucune n'est nécessaire, mais on se protège d'un commit accidentel)
+.env
+.env.*
+# Fichiers système
+.DS_Store

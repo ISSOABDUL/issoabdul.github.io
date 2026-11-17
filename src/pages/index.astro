@@ -1,0 +1,211 @@
+---
+/**
+ * Page d'accueil. Ordre des sections pensé pour un recruteur pressé :
+ * 1. qui je suis et ce que j'apporte (en 5 secondes),
+ * 2. les preuves (études de cas),
+ * 3. le reste du parcours, puis le contact.
+ */
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+  identite,
+  cv,
+  contact,
+  methode,
+  autresRealisations,
+  competences,
+  experiences,
+  formations,
+  certification,
+} from '../data/accueil';
+
+// Tri explicite par le champ `ordre` : l'ordre d'affichage ne dépend pas des noms de fichiers.
+const projets = (await getCollection('projets')).sort((a, b) => a.data.ordre - b.data.ordre);
+
+// Les lignes dont la date n'est pas vérifiée (`periode: null`) ne sont pas publiées.
+const formationsVerifiees = formations.filter((etape) => etape.periode !== null);
+---
+
+<BaseLayout titre={`${identite.nom} · ${identite.titre}`} description={identite.phraseDeValeur}>
+  <!-- En-tête : la phrase de valeur est l'élément le plus visible de la page. -->
+  <section class="pb-16 pt-14 sm:pt-20" aria-labelledby="titre-principal">
+    <p class="text-encre-douce">{identite.titre}, {identite.ville}</p>
+    <h1
+      id="titre-principal"
+      class="mt-4 max-w-[22ch] text-[clamp(2rem,5.2vw,3.5rem)] font-[680] leading-[1.08] tracking-[-0.025em]"
+    >
+      {identite.phraseDeValeur}
+    </h1>
+
+    <div class="mt-9 flex flex-wrap gap-3">
+      <a
+        href="#contact"
+        class="rounded-md bg-accent px-5 py-3 font-semibold text-papier no-underline hover:opacity-90"
+      >
+        Me contacter
+      </a>
+      {
+        cv.disponible && (
+          <a
+            href={cv.chemin}
+            download
+            class="rounded-md border border-encre px-5 py-3 font-semibold text-encre no-underline hover:border-accent hover:text-accent"
+          >
+            Télécharger mon CV
+          </a>
+        )
+      }
+      <a
+        href="#projets"
+        class="rounded-md px-5 py-3 font-semibold text-encre underline decoration-ligne underline-offset-4 hover:decoration-accent"
+      >
+        Voir les études de cas
+      </a>
+    </div>
+
+    <!-- Méthode : c'est une vraie séquence, d'où la numérotation et la ligne qui relie les étapes. -->
+    <ol class="mt-14 grid gap-6 border-t border-ligne pt-6 sm:grid-cols-3 sm:gap-8" aria-label="Ma méthode">
+      {
+        methode.map((etape, index) => (
+          <li class="flex gap-3">
+            <span
+              class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-doux text-sm font-bold text-accent"
+              aria-hidden="true"
+            >
+              {index + 1}
+            </span>
+            <span class="font-medium leading-snug">{etape}</span>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <!-- Études de cas : des lignes séparées par des filets plutôt que des cartes identiques. -->
+  <section id="projets" class="scroll-mt-6 py-12" aria-labelledby="titre-projets">
+    <h2 id="titre-projets" class="text-[1.75rem] font-[680] tracking-[-0.015em]">Études de cas</h2>
+    <p class="mt-2 max-w-[60ch] text-encre-douce">
+      Trois projets livrés et en production, décrits sans nom de client ni donnée interne.
+    </p>
+
+    <ul class="mt-8 border-t border-ligne">
+      {
+        projets.map((projet) => (
+          <li class="border-b border-ligne">
+            <a
+              href={`/projets/${projet.id}/`}
+              class="group grid gap-x-10 gap-y-3 py-7 text-encre no-underline md:grid-cols-[1fr_16rem]"
+            >
+              <div>
+                <h3 class="text-xl font-semibold leading-snug group-hover:text-accent group-hover:underline">
+                  {projet.data.titre}
+                </h3>
+                <p class="mt-2 max-w-[62ch] text-encre-douce">{projet.data.resume}</p>
+              </div>
+              <dl class="grid content-start gap-2 text-sm">
+                <div>
+                  <dt class="sr-only">Contexte</dt>
+                  <dd class="font-medium">{projet.data.contexte}</dd>
+                </div>
+                <div>
+                  <dt class="sr-only">Rôle</dt>
+                  <dd class="text-encre-douce">{projet.data.role}</dd>
+                </div>
+                <div>
+                  <dt class="sr-only">Statut</dt>
+                  <dd class="text-accent">{projet.data.statut}</dd>
+                </div>
+              </dl>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="py-12" aria-labelledby="titre-realisations">
+    <h2 id="titre-realisations" class="text-[1.75rem] font-[680] tracking-[-0.015em]">Autres réalisations</h2>
+    <dl class="mt-6 border-t border-ligne">
+      {
+        autresRealisations.map((realisation) => (
+          <div class="grid gap-1 border-b border-ligne py-4 sm:grid-cols-[13rem_1fr] sm:gap-8">
+            <dt class="text-sm font-medium text-encre-douce sm:text-base">{realisation.contexte}</dt>
+            <dd>{realisation.description}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="py-12" aria-labelledby="titre-competences">
+    <h2 id="titre-competences" class="text-[1.75rem] font-[680] tracking-[-0.015em]">Compétences</h2>
+    <div class="mt-6 grid gap-8 border-t border-ligne pt-6 md:grid-cols-3">
+      {
+        competences.map((groupe) => (
+          <div>
+            <h3 class="font-semibold">{groupe.domaine}</h3>
+            <ul class="mt-3 space-y-1.5 text-encre-douce">
+              {groupe.elements.map((element) => (
+                <li>{element}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section id="parcours" class="scroll-mt-6 py-12" aria-labelledby="titre-parcours">
+    <h2 id="titre-parcours" class="text-[1.75rem] font-[680] tracking-[-0.015em]">Parcours</h2>
+
+    <h3 class="mt-8 font-semibold">Expérience</h3>
+    <ul class="mt-3 border-t border-ligne">
+      {
+        experiences.map((etape) => (
+          <li class="grid gap-1 border-b border-ligne py-4 sm:grid-cols-[13rem_1fr] sm:gap-8">
+            <p class="text-sm text-encre-douce sm:text-base">{etape.periode}</p>
+            <div>
+              <p class="font-semibold">{etape.organisation}</p>
+              <p>{etape.intitule}</p>
+              {etape.detail && <p class="mt-1 text-encre-douce">{etape.detail}</p>}
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h3 class="mt-10 font-semibold">Formation et certification</h3>
+    <ul class="mt-3 border-t border-ligne">
+      {
+        formationsVerifiees.map((etape) => (
+          <li class="grid gap-1 border-b border-ligne py-4 sm:grid-cols-[13rem_1fr] sm:gap-8">
+            <p class="text-sm text-encre-douce sm:text-base">{etape.periode}</p>
+            <div>
+              <p class="font-semibold">{etape.organisation}</p>
+              <p>{etape.intitule}</p>
+            </div>
+          </li>
+        ))
+      }
+      <li class="grid gap-1 border-b border-ligne py-4 sm:grid-cols-[13rem_1fr] sm:gap-8">
+        <p class="text-sm text-encre-douce sm:text-base">Novembre 2026</p>
+        <div>
+          <p class="font-semibold">{certification.libelle}</p>
+          <p>{certification.statut}</p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section id="contact" class="scroll-mt-6 py-12" aria-labelledby="titre-contact">
+    <h2 id="titre-contact" class="text-[1.75rem] font-[680] tracking-[-0.015em]">Contact</h2>
+    <p class="mt-2 max-w-[60ch] text-encre-douce">
+      Pour échanger sur un projet ou une opportunité.
+    </p>
+    <ul class="mt-6 grid gap-3 text-lg">
+      <li><a href={`mailto:${contact.email}`}>{contact.email}</a></li>
+      <li><a href={contact.linkedin} rel="noopener noreferrer" target="_blank">LinkedIn</a></li>
+      <li><a href={contact.github} rel="noopener noreferrer" target="_blank">GitHub</a></li>
+    </ul>
+  </section>
+</BaseLayout>
